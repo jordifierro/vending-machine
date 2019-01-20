@@ -1,7 +1,10 @@
 package org.jordifierro.vendingmachine
 
 
-data class VendingMachine internal constructor(private val productStorage: List<Product> = emptyList(),
+class ClosedDoorException: Exception()
+
+data class VendingMachine internal constructor(private val isBackDoorOpen: Boolean = false,
+                                               private val productStorage: List<Product> = emptyList(),
                                                private val coinStorage: List<Coin> = emptyList(),
                                                private val insertedCoins: List<Coin> = emptyList(),
                                                private val errorMessage: ErrorMessage? = null,
@@ -18,9 +21,22 @@ data class VendingMachine internal constructor(private val productStorage: List<
         fun create() = VendingMachine()
     }
 
-    fun refillProducts(products: List<Product>): VendingMachine = copy(productStorage = this.productStorage + products)
+    fun openBackDoor(user: User): VendingMachine {
+        if (user.canOpenTheBackDoor) return copy(isBackDoorOpen = true)
+        throw NoPermissionException()
+    }
 
-    fun refillCoins(coins: List<Coin>): VendingMachine = copy(coinStorage = this.coinStorage + coins)
+    fun closeBackDoor(): VendingMachine = copy(isBackDoorOpen = false)
+
+    fun refillProducts(products: List<Product>): VendingMachine {
+        if (isBackDoorOpen) return copy(productStorage = this.productStorage + products)
+        throw ClosedDoorException()
+    }
+
+    fun refillCoins(coins: List<Coin>): VendingMachine {
+        if (isBackDoorOpen) return copy(coinStorage = this.coinStorage + coins)
+        throw ClosedDoorException()
+    }
 
     fun insertCoins(coins: List<Coin>): VendingMachine = copy(insertedCoins = this.insertedCoins + coins)
 

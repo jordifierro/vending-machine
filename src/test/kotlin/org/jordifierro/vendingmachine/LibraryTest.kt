@@ -1,13 +1,15 @@
 package org.jordifierro.vendingmachine
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.fail
 import org.junit.Test
 
 class LibraryTest {
 
     @Test
-    fun test_successfully_buy_a_product() {
+    fun test_successfully_buy_a_product_after_supplier_opens_back_door_and_refills_machine() {
         VendingMachine.create()
+            .openBackDoor(User.SUPPLIER)
             .refillProducts(listOf(Product.WATER, Product.WATER))
             .refillCoins(listOf(Coin.CENT_5, Coin.CENT_5))
             .insertCoins(listOf(Coin.EURO_1))
@@ -19,6 +21,7 @@ class LibraryTest {
     @Test
     fun test_collect_products_and_coins_empties_the_dispenser() {
         VendingMachine.create()
+            .openBackDoor(User.SUPPLIER)
             .refillProducts(listOf(Product.WATER, Product.WATER))
             .refillCoins(listOf(Coin.CENT_5, Coin.CENT_5))
             .insertCoins(listOf(Coin.EURO_1))
@@ -36,6 +39,7 @@ class LibraryTest {
     @Test
     fun test_when_buy_twice_and_no_stock() {
         VendingMachine.create()
+            .openBackDoor(User.SUPPLIER)
             .refillProducts(listOf(Product.WATER))
             .refillCoins(listOf(Coin.CENT_5, Coin.CENT_5, Coin.CENT_10))
             .insertCoins(listOf(Coin.EURO_1))
@@ -54,6 +58,7 @@ class LibraryTest {
     @Test
     fun test_not_enough_change_after_and_before_refill() {
         VendingMachine.create()
+            .openBackDoor(User.SUPPLIER)
             .refillProducts(listOf(Product.COKE))
             .insertCoins(listOf(Coin.EURO_2))
             .selectProduct(Product.COKE)
@@ -70,6 +75,7 @@ class LibraryTest {
     @Test
     fun test_not_enough_coins_to_buy() {
         VendingMachine.create()
+            .openBackDoor(User.SUPPLIER)
             .refillProducts(listOf(Product.WATER))
             .insertCoins(listOf(Coin.CENT_50))
             .selectProduct(Product.WATER)
@@ -81,6 +87,7 @@ class LibraryTest {
     @Test
     fun test_not_exact_change() {
         VendingMachine.create()
+            .openBackDoor(User.SUPPLIER)
             .refillProducts(listOf(Product.SPRITE))
             .refillCoins(listOf(Coin.CENT_20))
             .insertCoins(listOf(Coin.CENT_50, Coin.EURO_1))
@@ -105,6 +112,7 @@ class LibraryTest {
     @Test
     fun test_products_and_money_are_accumulated_on_the_dispenser_if_noone_collects_them() {
         VendingMachine.create()
+            .openBackDoor(User.SUPPLIER)
             .refillProducts(listOf(Product.WATER, Product.WATER))
             .refillCoins(listOf(Coin.CENT_5, Coin.CENT_5, Coin.CENT_10))
             .insertCoins(listOf(Coin.EURO_1))
@@ -118,6 +126,7 @@ class LibraryTest {
     @Test
     fun test_successfully_buy_two_products_using_first_coins_to_return_second_change() {
         VendingMachine.create()
+            .openBackDoor(User.SUPPLIER)
             .refillProducts(listOf(Product.COKE, Product.SPRITE))
             .insertCoins(listOf(Coin.EURO_1))
             .insertCoins(listOf(Coin.CENT_10, Coin.CENT_10, Coin.CENT_10, Coin.CENT_10, Coin.CENT_10))
@@ -126,6 +135,53 @@ class LibraryTest {
             .selectProduct(Product.SPRITE)
             .checkProductsInTheDispenser(listOf(Product.COKE, Product.SPRITE))
             .checkCoinsInTheDispenser(listOf(Coin.CENT_10))
+    }
+
+    @Test
+    fun test_customer_has_no_permissons_to_open_back_door() {
+        try {
+            VendingMachine.create()
+                .openBackDoor(User.CUSTOMER)
+            fail()
+        } catch (e: NoPermissionException) {}
+    }
+
+    @Test
+    fun test_product_refill_cannot_be_done_if_closed_back_door() {
+        try {
+            VendingMachine.create()
+                .closeBackDoor()
+                .refillProducts(listOf(Product.WATER))
+            fail()
+        } catch (e: ClosedDoorException) {}
+    }
+
+    @Test
+    fun test_coin_refill_cannot_be_done_if_closed_back_door() {
+        try {
+            VendingMachine.create()
+                .closeBackDoor()
+                .refillCoins(listOf(Coin.EURO_1))
+            fail()
+        } catch (e: ClosedDoorException) {}
+    }
+
+    @Test
+    fun test_product_refill_cannot_be_done_if_not_open_back_door() {
+        try {
+            VendingMachine.create()
+                .refillProducts(listOf(Product.WATER))
+            fail()
+        } catch (e: ClosedDoorException) {}
+    }
+
+    @Test
+    fun test_coin_refill_cannot_be_done_if_not_open_back_door() {
+        try {
+            VendingMachine.create()
+                .refillCoins(listOf(Coin.EURO_1))
+            fail()
+        } catch (e: ClosedDoorException) {}
     }
 }
 

@@ -1,23 +1,69 @@
 package org.jordifierro.vendingmachine
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.fail
 import org.junit.Test
 
 class VendingMachineTest {
 
     @Test
-    fun test_refill_products_adds_products_to_storage() {
-        VendingMachine(productStorage = listOf(Product.COKE, Product.COKE))
+    fun test_refill_products_adds_products_to_storage_when_door_opened() {
+        VendingMachine(isBackDoorOpen = true,
+                       productStorage = listOf(Product.COKE, Product.COKE))
             .refillProducts(listOf(Product.WATER))
-            .shouldReturnVendingMachineWith(productStorage = listOf(Product.COKE, Product.COKE, Product.WATER))
+            .shouldReturnVendingMachineWith(isBackDoorOpen = true,
+                                            productStorage = listOf(Product.COKE, Product.COKE, Product.WATER))
     }
 
     @Test
-    fun test_refill_coins_adds_coins_to_storage() {
-        VendingMachine(coinStorage = listOf(Coin.CENT_10, Coin.CENT_5, Coin.EURO_2))
+    fun test_refill_coins_adds_coins_to_storage_when_door_opened() {
+        VendingMachine(isBackDoorOpen = true,
+                       coinStorage = listOf(Coin.CENT_10, Coin.CENT_5, Coin.EURO_2))
             .refillCoins(listOf(Coin.CENT_20, Coin.EURO_2))
-            .shouldReturnVendingMachineWith(coinStorage = listOf(Coin.CENT_10, Coin.CENT_5,
-                                                                Coin.EURO_2, Coin.CENT_20, Coin.EURO_2))
+            .shouldReturnVendingMachineWith(isBackDoorOpen = true,
+                                            coinStorage = listOf(Coin.CENT_10, Coin.CENT_5,
+                                                                 Coin.EURO_2, Coin.CENT_20, Coin.EURO_2))
+    }
+
+    @Test
+    fun test_refill_products_throws_exception_when_door_is_closed() {
+        try {
+            VendingMachine(isBackDoorOpen = false)
+                .refillProducts(listOf(Product.WATER))
+            fail()
+        } catch (e: ClosedDoorException) {}
+    }
+
+    @Test
+    fun test_refill_coins_throws_exception_when_door_is_closed() {
+        try {
+            VendingMachine(isBackDoorOpen = false)
+                .refillCoins(listOf(Coin.EURO_1))
+            fail()
+        } catch (e: ClosedDoorException) {}
+    }
+
+    @Test
+    fun test_customer_cannot_open_back_door() {
+        try {
+            VendingMachine()
+                .openBackDoor(user = User.CUSTOMER)
+            fail()
+        } catch (e: NoPermissionException) {}
+    }
+
+    @Test
+    fun test_supplier_can_open_back_door() {
+        VendingMachine()
+            .openBackDoor(user = User.SUPPLIER)
+            .shouldReturnVendingMachineWith(isBackDoorOpen = true)
+    }
+
+    @Test
+    fun test_close_back_door_saves_state() {
+        VendingMachine(isBackDoorOpen = true)
+            .closeBackDoor()
+            .shouldReturnVendingMachineWith(isBackDoorOpen = false)
     }
 
     @Test
@@ -146,13 +192,15 @@ class VendingMachineTest {
     }
 }
 
-fun VendingMachine.shouldReturnVendingMachineWith(productStorage: List<Product> = emptyList(),
+fun VendingMachine.shouldReturnVendingMachineWith(isBackDoorOpen: Boolean = false,
+                                                  productStorage: List<Product> = emptyList(),
                                                   coinStorage: List<Coin> = emptyList(),
                                                   insertedCoins: List<Coin> = emptyList(),
                                                   errorMessage: VendingMachine.ErrorMessage? = null,
                                                   productDispenser: List<Product> = emptyList(),
                                                   coinDispenser: List<Coin> = emptyList()): VendingMachine {
-    assertEquals(VendingMachine(productStorage = productStorage,
+    assertEquals(VendingMachine(isBackDoorOpen = isBackDoorOpen,
+                                productStorage = productStorage,
                                 coinStorage = coinStorage,
                                 insertedCoins = insertedCoins,
                                 errorMessage = errorMessage,
