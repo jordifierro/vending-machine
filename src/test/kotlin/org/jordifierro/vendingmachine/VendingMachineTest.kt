@@ -78,6 +78,21 @@ class VendingMachineTest {
     }
 
     @Test
+    fun test_when_dispensing_add_product_and_coins_to_already_dispensed() {
+        VendingMachine(productStorage = listOf(Product.SPRITE),
+            coinStorage = listOf(Coin.CENT_50, Coin.CENT_10),
+            insertedCoins = listOf(Coin.EURO_2),
+            coinDispenser = listOf(Coin.EURO_1),
+            productDispenser = listOf(Product.WATER))
+            .selectProduct(Product.SPRITE)
+            .shouldReturnVendingMachineWith(productStorage = emptyList(),
+                coinStorage = listOf(Coin.EURO_2),
+                coinDispenser = listOf(Coin.EURO_1, Coin.CENT_50, Coin.CENT_10),
+                productDispenser = listOf(Product.WATER, Product.SPRITE))
+    }
+
+
+    @Test
     fun test_when_more_money_than_needed_dispenses_it_back() {
         VendingMachine(productStorage = listOf(Product.COKE),
             coinStorage = emptyList(),

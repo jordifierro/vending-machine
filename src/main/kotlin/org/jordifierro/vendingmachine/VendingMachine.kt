@@ -39,7 +39,7 @@ data class VendingMachine internal constructor(private val productStorage: List<
                  insertedCoins = emptyList(),
                  errorMessage = null,
                  productDispenser = this.productDispenser + product,
-                 coinDispenser = changeCoins)
+                 coinDispenser = this.coinDispenser + changeCoins)
         } catch (e: NoChangeException) {
             return copy(errorMessage = ErrorMessage.NO_MONEY_CHANGE)
         }
