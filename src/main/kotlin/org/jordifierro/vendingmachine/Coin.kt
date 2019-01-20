@@ -9,3 +9,5 @@ enum class Coin(val value: Int) {
     EURO_1(100),
     EURO_2(200)
 }
+
+fun List<Coin>.value() = this.sumBy { it.value }
