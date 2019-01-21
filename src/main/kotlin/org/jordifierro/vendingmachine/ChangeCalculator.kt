@@ -22,7 +22,8 @@ fun calculateChange(availableCoins: List<Coin>, changeNeeded: Int): List<Coin> {
                                 }
                     }
 
-    if (!waysToChange[changeNeeded].isEmpty())
-        return waysToChange[changeNeeded]
-    else throw NoChangeException()
+    if (waysToChange[changeNeeded].isEmpty())
+        throw NoChangeException()
+
+    return waysToChange[changeNeeded]
 }
